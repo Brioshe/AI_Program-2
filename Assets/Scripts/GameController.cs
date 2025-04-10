@@ -34,6 +34,7 @@ public class GameController : MonoBehaviour
             if (cellMechanics != null)
             {
                 Debug.LogWarning("CellMechanics loaded successfully");
+                Debug.LogWarning("Graph Size: " + graph.m_width + " x " + graph.m_height);
                 cellMechanics.Init(graph, graphView);
                 StartCoroutine(GOLCoroutine());
             }

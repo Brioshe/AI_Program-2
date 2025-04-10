@@ -33,7 +33,8 @@ public class GraphClass : MonoBehaviour
         {
             for (int x = 0; x < m_width; x++)
             {
-                Node newNode = new Node(x, y, false);
+                CellState cellState = (CellState)mapData[x, y];
+                Node newNode = new Node(x, y, cellState);
                 nodes[x, y] = newNode;
                 newNode.position = new Vector3(x, 0, y);
                 Debug.Log("Node (" + newNode.position.x + ", " + newNode.position.z + ")"); 

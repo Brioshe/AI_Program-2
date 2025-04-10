@@ -6,14 +6,10 @@ using System.Collections.Generic;
 
 public class CellMechanics : MonoBehaviour
 {
-
     GraphClass Graph;
     GraphView GraphView;
-
     List<Node> AliveNodes;
-    List<Node> AliveNeighbors;
-
-    bool[,] nextStates = new bool[16, 9];
+    CellState[,] nextStates;
 
     public void Init(GraphClass Graph, GraphView GraphView)
     {
@@ -26,28 +22,28 @@ public class CellMechanics : MonoBehaviour
         this.Graph = Graph;
         this.GraphView = GraphView;
         AliveNodes = new List<Node>();
-        Graph.nodes[2, 2].cellAlive = true;
-        Graph.nodes[2, 3].cellAlive = true;
-        Graph.nodes[2, 4].cellAlive = true;
+        nextStates = new CellState[Graph.m_width, Graph.m_height];
 
-        Graph.nodes[6, 8].cellAlive = true;
-        Graph.nodes[6, 7].cellAlive = true;
-        Graph.nodes[6, 6].cellAlive = true;
-        Graph.nodes[5, 6].cellAlive = true;
-        Graph.nodes[4, 7].cellAlive = true;
+        // Graph.nodes[2, 2].cellAlive = true;
+        // Graph.nodes[2, 3].cellAlive = true;
+        // Graph.nodes[2, 4].cellAlive = true;
 
-        AliveNeighbors = new List<Node>();
+        // Graph.nodes[6, 8].cellAlive = true;
+        // Graph.nodes[6, 7].cellAlive = true;
+        // Graph.nodes[6, 6].cellAlive = true;
+        // Graph.nodes[5, 6].cellAlive = true;
+        // Graph.nodes[4, 7].cellAlive = true;
     }
 
     void UpdateAliveNodes()
     {
         foreach (Node n in Graph.nodes)
         {
-            if (n.cellAlive == true && !AliveNodes.Contains(n))
+            if (n.cellState == CellState.alive && !AliveNodes.Contains(n))
             {
                 AliveNodes.Add(n);
             }
-            if (n.cellAlive == false && AliveNodes.Contains(n))
+            if (n.cellState == CellState.dead && AliveNodes.Contains(n))
             {
                 AliveNodes.Remove(n);
                 NodeView deadNode = GraphView.nodeViews[n.xIndex, n.yIndex];
@@ -63,23 +59,17 @@ public class CellMechanics : MonoBehaviour
         foreach (Node n in Graph.nodes)
         {
             aliveNeighborCount = CountAliveNeighbors(n);
-            bool nextAlive = n.cellAlive; 
+            CellState nextAlive = n.cellState; 
             // Game Rules
             // Death
-            if (n.cellAlive) {
-                if (aliveNeighborCount < 2) // Underpopulation
-                {
-                    nextAlive = false;
-                }
-                if (aliveNeighborCount > 3) // Overpopulation
-                {
-                    nextAlive = false;
-                }
-            }
-            // Birthing
-            if (!n.cellAlive && aliveNeighborCount == 3)
+            if (n.cellState == CellState.alive && (aliveNeighborCount < 2 || aliveNeighborCount > 3))
             {
-                nextAlive = true;
+                nextAlive = CellState.dead;
+            }
+            // Birth
+            if (n.cellState == CellState.dead && aliveNeighborCount == 3)
+            {
+                nextAlive = CellState.alive;
             }
 
             nextStates[n.xIndex, n.yIndex] = nextAlive;
@@ -87,7 +77,7 @@ public class CellMechanics : MonoBehaviour
 
         foreach (Node n in Graph.nodes)
         {
-            n.cellAlive = nextStates[n.xIndex, n.yIndex];
+            n.cellState = nextStates[n.xIndex, n.yIndex];
         }
 
         UpdateAliveNodes();
@@ -98,7 +88,7 @@ public class CellMechanics : MonoBehaviour
         int aliveCount = 0;
         foreach (Node n in node.neighbors)
         {
-            if (n.cellAlive == true)
+            if (n.cellState == CellState.alive)
             {
                 aliveCount++;
             }
