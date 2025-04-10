@@ -4,8 +4,8 @@ using UnityEngine;
 public class GraphView : MonoBehaviour
 {
     public GameObject nodeviewPrefab;
-    public Color openColor = Color.white;
-    public Color blockedColor = Color.black;
+    public Color aliveColor = Color.black;
+    public Color deadColor = Color.white;
     public NodeView[,] nodeViews;
     public void Init(GraphClass graph)
     {
@@ -25,14 +25,8 @@ public class GraphView : MonoBehaviour
             {
                 nodeview.Init(n);
                 nodeViews[n.xIndex, n.yIndex] = nodeview;
-                if (n.nodeType == NodeType.Blocked)
-                {
-                    nodeview.ColorNode(blockedColor);
-                }
-                else
-                {
-                    nodeview.ColorNode(openColor);
-                }
+                
+                nodeview.ColorNode(deadColor);
             }
         }
     }

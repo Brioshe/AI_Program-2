@@ -6,7 +6,6 @@ public class GraphClass : MonoBehaviour
     // Translates 1's and 0's from MapData.cs to an array of nodes
     public Node[,] nodes; //Array of nodes
     public NodeView[,] nodeViews;
-    public List<Node> walls = new List<Node>();
 
     int[,] m_mapData;
     public int m_width;
@@ -15,9 +14,13 @@ public class GraphClass : MonoBehaviour
     public static readonly Vector2[] allDirections =
     {
         new Vector2(0f, 1f),
+        new Vector2(1f, 1f),
         new Vector2(1f, 0f),
+        new Vector2(1f, -1f),
         new Vector2(0f, -1f),
-        new Vector2(-1f, 0f)
+        new Vector2(-1f, -1f),
+        new Vector2(-1f, 0f),
+        new Vector2(-1f, 1f)
     };
 
     public void Init(int[,] mapData)
@@ -30,15 +33,10 @@ public class GraphClass : MonoBehaviour
         {
             for (int x = 0; x < m_width; x++)
             {
-                NodeType nodeType = (NodeType)mapData[x, y];
-                Node newNode = new Node(x, y, nodeType);
+                Node newNode = new Node(x, y, false);
                 nodes[x, y] = newNode;
                 newNode.position = new Vector3(x, 0, y);
                 Debug.Log("Node (" + newNode.position.x + ", " + newNode.position.z + ")"); 
-                if (nodeType == NodeType.Blocked)
-                {
-                    walls.Add(newNode);
-                }
             }
         }
 
@@ -46,10 +44,7 @@ public class GraphClass : MonoBehaviour
         {
             for (int x = 0; x < m_width; x++)
             {
-                if (nodes[x, y].nodeType != NodeType.Blocked)
-                {
-                    nodes[x,y].neighbors = GetNeighbors(x, y, nodes, allDirections);
-                }
+                nodes[x,y].neighbors = GetNeighbors(x, y, nodes, allDirections);
             }
         }
         Debug.Log("Successfully called!");
@@ -69,7 +64,7 @@ public class GraphClass : MonoBehaviour
             int newX = x + (int)dir.x;
             int newY = y + (int)dir.y;
             Debug.Log("Newx = " + newX + " Newy = " + newY);
-            if(IsWithinBounds(newX, newY) && NodeArray[newX, newY] !=null && NodeArray[newX,newY].nodeType != NodeType.Blocked)
+            if(IsWithinBounds(newX, newY) && NodeArray[newX, newY] !=null)
             {
                 neighborNodes.Add(NodeArray[newX,newY]);
             }

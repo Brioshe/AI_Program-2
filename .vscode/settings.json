@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "graphAlgorithms.sln"
+    "dotnet.defaultSolution": "AI_Program-2.sln"
 }
