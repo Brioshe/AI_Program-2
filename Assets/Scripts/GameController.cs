@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public class GameController : MonoBehaviour
 {
@@ -12,8 +14,13 @@ public class GameController : MonoBehaviour
     public GraphClass graph;
     public CellMechanics cellMechanics;
 
+    // Gametick Slider
+    public UnityEngine.UI.Slider slider;
     [Range(0,1f)]
     public float tickInterval = 0.5f;
+    public float sliderVal;
+    public TextMeshProUGUI sliderText;
+
 
     void Start()
     {
@@ -39,6 +46,18 @@ public class GameController : MonoBehaviour
                 StartCoroutine(GOLCoroutine());
             }
         }
+    }
+
+    void Update()
+    {
+        // Slider Components
+        sliderVal = slider.value;
+        if (tickInterval != sliderVal)
+        {
+            tickInterval = sliderVal;
+            sliderText.text = (Math.Round(sliderVal * 100f) / 100).ToString();         
+        }
+
     }
 
     IEnumerator GOLCoroutine()
