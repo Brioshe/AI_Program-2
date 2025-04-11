@@ -114,10 +114,11 @@ public class GameController : MonoBehaviour
             sliderText.text = (Math.Round(sliderVal * 100f)*2).ToString() + "%";         
         }
 
+        // Get mouse info and change state 
         if (Input.GetMouseButtonDown(0))
         {
             isDragging = true;
-            GetSwitchState();
+            GetSwitchState(); // Set lock on switch
             StateSwitchHandler();
         }
         if (Input.GetMouseButton(0) && isDragging)
@@ -144,7 +145,7 @@ public class GameController : MonoBehaviour
 
             while (!IsGameplayRunning)
             {
-                ChooseMapPreset();
+                ChooseMapPreset(); // preset switcher
                 yield return new WaitForSeconds(tickInterval);
             }
 
@@ -191,14 +192,14 @@ public class GameController : MonoBehaviour
         
         if (IsGamePaused)
         {
-            cb.normalColor = defaultNormal;
+            cb.normalColor = defaultNormal; // Switch to default colors
             cb.highlightedColor = defaultHighlighted;
             cb.pressedColor = defaultPressed;
             Pausebutton.colors = cb;
         }
         if (!IsGamePaused)
         {
-            cb.normalColor = blueNormal;
+            cb.normalColor = blueNormal;    // Switch to blue colors
             cb.highlightedColor = blueHighlighted;
             cb.pressedColor = bluePressed;
             Pausebutton.colors = cb;
@@ -215,18 +216,18 @@ public class GameController : MonoBehaviour
             stopText.enabled = false;
 
             mapSetFlag = false;
-            ChooseMapPreset();
+            ChooseMapPreset();  // Allow map change when game stops.
 
             IsGamePaused = false;
             Pausebutton.interactable = false;
 
-            ColorBlock pcb = Pausebutton.colors;
+            ColorBlock pcb = Pausebutton.colors;    // Switch to default colors
             pcb.normalColor = defaultNormal;
             pcb.highlightedColor = defaultHighlighted;
             pcb.pressedColor = defaultPressed;
             Pausebutton.colors = pcb;
 
-            ColorBlock cb = Startbutton.colors;
+            ColorBlock cb = Startbutton.colors;     // Switch to green colors
             cb.normalColor = greenNormal;
             cb.highlightedColor = greenHighlighted;
             cb.pressedColor = greenPressed;
@@ -240,7 +241,7 @@ public class GameController : MonoBehaviour
             IsGamePaused = false;
             Pausebutton.interactable = true;
 
-            ColorBlock cb = Startbutton.colors;
+            ColorBlock cb = Startbutton.colors;     // Switch to red colors
             cb.normalColor = redNormal;
             cb.highlightedColor = redHighlighted;
             cb.pressedColor = redPressed;
@@ -264,20 +265,20 @@ public class GameController : MonoBehaviour
         {
             for (int x = 0; x < graph.m_width; x++)
             {
-                graph.nodes[x, y].cellState = (CellState)char.GetNumericValue(lines[y][x]);
+                graph.nodes[x, y].cellState = (CellState)char.GetNumericValue(lines[y][x]); // Set node values to equal map values
             }
         }
 
         cellMechanics.UpdateAliveNodes();
     }
 
-    public void GetSwitchState()
+    public void GetSwitchState()    // Define ray, cast it from camera, detect clicked node's cellstate, and lock switching to only that type.
     {
-        Ray switchRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray switchRay = Camera.main.ScreenPointToRay(Input.mousePosition); // Define ray
 
         if (Physics.Raycast(switchRay, out RaycastHit hit))
         {
-            GameObject clickedObj = hit.collider.gameObject;
+            GameObject clickedObj = hit.collider.gameObject;    
             NodeView nodeView = clickedObj.GetComponentInParent<NodeView>();
             
             Debug.Log("SwitchState probe ray hit @ (" + nodeView.node.xIndex + ", " + nodeView.node.yIndex + ")");
@@ -293,7 +294,7 @@ public class GameController : MonoBehaviour
         }
     }
 
-    public void StateSwitchHandler()
+    public void StateSwitchHandler()    // Define ray, cast ray from camera, switch node that's hit.
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
