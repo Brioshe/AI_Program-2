@@ -21,7 +21,7 @@ public class GameController : MonoBehaviour
 
     // Gametick Slider
     public UnityEngine.UI.Slider slider;
-    [Range(0,1f)]
+    [Range(1f,0)]
     public float tickInterval = 0.5f;
     public float sliderVal;
     public TextMeshProUGUI sliderText;
@@ -67,6 +67,13 @@ public class GameController : MonoBehaviour
     public TextAsset blinkers;
     public TextAsset gun;
 
+    // Flags
+    private bool mapSetFlag = false;
+    private bool isDragging = false;
+    private bool switchStateLock;
+
+    private Node lastNodeRaycast = null;
+
     void Start()
     {
         if (mapData != null && graph != null)
@@ -103,9 +110,27 @@ public class GameController : MonoBehaviour
         sliderVal = slider.value;
         if (tickInterval != sliderVal)
         {
-            tickInterval = sliderVal;
-            sliderText.text = (Math.Round(sliderVal * 100f) / 100).ToString();         
+            tickInterval = 1 - sliderVal;
+            sliderText.text = (Math.Round(sliderVal * 100f)*2).ToString() + "%";         
         }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            isDragging = true;
+            GetSwitchState();
+            StateSwitchHandler();
+        }
+        if (Input.GetMouseButton(0) && isDragging)
+        {
+            StateSwitchHandler();
+        }
+        if(Input.GetMouseButtonUp(0))
+        {
+            isDragging = false;
+        }
+
+
+        cellMechanics.UpdateAliveNodes();
     }
 
     IEnumerator GOLCoroutine()
@@ -132,21 +157,24 @@ public class GameController : MonoBehaviour
 
     public void ChooseMapPreset()
     {
-        if (mapPreset == MapPresets.empty)
-        {
-            SetState(empty);
-        }
-        else if (mapPreset == MapPresets.gliders)
-        {
-            SetState(gliders);
-        }
-        else if (mapPreset == MapPresets.blinkers)
-        {
-            SetState(blinkers);
-        }
-        else if (mapPreset == MapPresets.gun)
-        {
-            SetState(gun);
+        if (!mapSetFlag) {
+            if (mapPreset == MapPresets.empty)
+            {
+                SetState(empty);
+            }
+            else if (mapPreset == MapPresets.gliders)
+            {
+                SetState(gliders);
+            }
+            else if (mapPreset == MapPresets.blinkers)
+            {
+                SetState(blinkers);
+            }
+            else if (mapPreset == MapPresets.gun)
+            {
+                SetState(gun);
+            }
+            mapSetFlag = true;
         }
     }
 
@@ -154,6 +182,7 @@ public class GameController : MonoBehaviour
     {
         mapPreset = (MapPresets)dropdown.value;
         Debug.LogWarning("Map Preset: " + mapPreset);
+        mapSetFlag = false;
     }
 
     public void PauseUnpausePress()
@@ -185,6 +214,7 @@ public class GameController : MonoBehaviour
             playText.enabled = true;
             stopText.enabled = false;
 
+            mapSetFlag = false;
             ChooseMapPreset();
 
             IsGamePaused = false;
@@ -225,22 +255,6 @@ public class GameController : MonoBehaviour
         cellMechanics.UpdateCellStates();
     }
 
-    public void ResetState()
-    {
-        List<string> lines = mapData.getTextFromFile();
-        mapData.setDimensions(lines); 
-
-        for (int y = 0; y < graph.m_height; y++)
-        {
-            for (int x = 0; x < graph.m_width; x++)
-            {
-                graph.nodes[x, y].cellState = (CellState)char.GetNumericValue(lines[y][x]);
-            }
-        }
-
-        cellMechanics.UpdateAliveNodes();
-    }
-
     public void SetState(TextAsset text)
     {
         List<string> lines = mapData.getTextFromFile(text);
@@ -255,5 +269,54 @@ public class GameController : MonoBehaviour
         }
 
         cellMechanics.UpdateAliveNodes();
+    }
+
+    public void GetSwitchState()
+    {
+        Ray switchRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(switchRay, out RaycastHit hit))
+        {
+            GameObject clickedObj = hit.collider.gameObject;
+            NodeView nodeView = clickedObj.GetComponentInParent<NodeView>();
+            
+            Debug.Log("SwitchState probe ray hit @ (" + nodeView.node.xIndex + ", " + nodeView.node.yIndex + ")");
+
+            if (nodeView.node.cellState == CellState.alive)
+            {
+                switchStateLock = true;
+            }
+            else if (nodeView.node.cellState == CellState.dead)
+            {
+                switchStateLock = false;
+            }
+        }
+    }
+
+    public void StateSwitchHandler()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            GameObject clickedObj = hit.collider.gameObject;
+            NodeView nodeView = clickedObj.GetComponentInParent<NodeView>();
+            
+            Debug.Log("Raycast hit @ (" + nodeView.node.xIndex + ", " + nodeView.node.yIndex + ")");
+
+            if (nodeView != null && nodeView.node != null && lastNodeRaycast != nodeView.node)
+            {
+                lastNodeRaycast = nodeView.node;
+
+                if (nodeView.node.cellState == CellState.dead && switchStateLock == false)
+                {
+                    nodeView.node.cellState = CellState.alive;
+                }
+                else if (nodeView.node.cellState == CellState.alive && switchStateLock == true)
+                {
+                    nodeView.node.cellState = CellState.dead;
+                }
+            }
+        }
     }
 }
