@@ -24,18 +24,10 @@ public class CellMechanics : MonoBehaviour
         AliveNodes = new List<Node>();
         nextStates = new CellState[Graph.m_width, Graph.m_height];
 
-        // Graph.nodes[2, 2].cellAlive = true;
-        // Graph.nodes[2, 3].cellAlive = true;
-        // Graph.nodes[2, 4].cellAlive = true;
-
-        // Graph.nodes[6, 8].cellAlive = true;
-        // Graph.nodes[6, 7].cellAlive = true;
-        // Graph.nodes[6, 6].cellAlive = true;
-        // Graph.nodes[5, 6].cellAlive = true;
-        // Graph.nodes[4, 7].cellAlive = true;
+        UpdateAliveNodes();
     }
 
-    void UpdateAliveNodes()
+    public void UpdateAliveNodes()
     {
         foreach (Node n in Graph.nodes)
         {
