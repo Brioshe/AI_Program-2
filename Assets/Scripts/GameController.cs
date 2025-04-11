@@ -51,10 +51,21 @@ public class GameController : MonoBehaviour
     public Color defaultHighlighted = new Color32(226, 226, 226, 255);
     public Color defaultPressed = new Color32(185, 184, 184, 255);
 
+
+    public TMP_Dropdown dropdown;
     public enum MapPresets {
+        empty,
+        blinkers,
+        gliders,
+        gun
+    }
 
-   }
+    public MapPresets mapPreset;
 
+    public TextAsset empty;
+    public TextAsset gliders;
+    public TextAsset blinkers;
+    public TextAsset gun;
 
     void Start()
     {
@@ -100,17 +111,49 @@ public class GameController : MonoBehaviour
     IEnumerator GOLCoroutine()
     {
         while (true) {
-            while (!IsGameplayRunning || IsGamePaused)
+
+            while (IsGamePaused)
             {
+                yield return new WaitForSeconds(tickInterval);
+            }
+
+            while (!IsGameplayRunning)
+            {
+                ChooseMapPreset();
                 yield return new WaitForSeconds(tickInterval);
             }
 
             while (IsGameplayRunning && !IsGamePaused) {
                 cellMechanics.UpdateCellStates();
-                Debug.Log("TICK");
                 yield return new WaitForSeconds(tickInterval);
             }
         }
+    }
+
+    public void ChooseMapPreset()
+    {
+        if (mapPreset == MapPresets.empty)
+        {
+            SetState(empty);
+        }
+        else if (mapPreset == MapPresets.gliders)
+        {
+            SetState(gliders);
+        }
+        else if (mapPreset == MapPresets.blinkers)
+        {
+            SetState(blinkers);
+        }
+        else if (mapPreset == MapPresets.gun)
+        {
+            SetState(gun);
+        }
+    }
+
+    public void OnDropDownChange(TMP_Dropdown dropdown)
+    {
+        mapPreset = (MapPresets)dropdown.value;
+        Debug.LogWarning("Map Preset: " + mapPreset);
     }
 
     public void PauseUnpausePress()
@@ -142,7 +185,7 @@ public class GameController : MonoBehaviour
             playText.enabled = true;
             stopText.enabled = false;
 
-            ResetState();
+            ChooseMapPreset();
 
             IsGamePaused = false;
             Pausebutton.interactable = false;
@@ -180,7 +223,6 @@ public class GameController : MonoBehaviour
     public void GameStepOnce()
     {
         cellMechanics.UpdateCellStates();
-        Debug.Log("TICK");
     }
 
     public void ResetState()
@@ -201,6 +243,17 @@ public class GameController : MonoBehaviour
 
     public void SetState(TextAsset text)
     {
+        List<string> lines = mapData.getTextFromFile(text);
+        mapData.setDimensions(lines); 
 
+        for (int y = 0; y < graph.m_height; y++)
+        {
+            for (int x = 0; x < graph.m_width; x++)
+            {
+                graph.nodes[x, y].cellState = (CellState)char.GetNumericValue(lines[y][x]);
+            }
+        }
+
+        cellMechanics.UpdateAliveNodes();
     }
 }

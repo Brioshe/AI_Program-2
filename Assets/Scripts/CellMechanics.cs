@@ -85,9 +85,9 @@ public class CellMechanics : MonoBehaviour
                 aliveCount++;
             }
         }
-        if (aliveCount > 0) {
-            Debug.Log("Neighbor Count for cell (" + node.xIndex + "," + node.yIndex + "): " + aliveCount );
-        }
+        // if (aliveCount > 0) {
+        //     Debug.Log("Neighbor Count for cell (" + node.xIndex + "," + node.yIndex + "): " + aliveCount );
+        // }
         return aliveCount;
     }
 }
